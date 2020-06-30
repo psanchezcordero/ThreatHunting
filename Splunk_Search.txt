@@ -1,0 +1,49 @@
+SPLUNK
+
+CONSULTA PARA IDENTIFICAR LAS URIS A LAS QUE ACCEDEN POCOS AGENTES DE USUARIO Y DIRECCIONES IP
+A diferencia de las URI benignas, las URI con cubierta de red probablemente tengan pocos agentes de usuario
+
+QUERY (APACHE)
+
+sourcetype="access_combined"
+| fillnull value=- 'Comentario("Rellena todos los campos vacíos con - -")'
+| search status>="200" status <"300" uri!=- clientip!=- 'Comentario("Sólo códigos exitosos 200-299, eliminar URIs en blanco y IPs de clientes")'
+| stats min(_time) as start max(_time) as stop dc(useragent) as dc_user_agent values(useragent) as values_user_agent dc(clientip) as dc_src values(clientip) as values_src count by uri 'Comentario("Encuentra la primera y última vez que se encontró la agrupación, número de cadenas distintas de User Agent y direcciones IP utilizadas para acceder a esa URI")'
+| convert ctime(start) ctime(stop) 'Comentario("Convertir los tiempos a un formato legible")'
+| search dc_src<=5 OR dc_user_agent<=5 'Comentario("Solo URIs con <=5 agentes de usuario únicos o direcciones IP")'
+| table start stop uri dc_user_agent values_user_agent dc_src values_src
+
+QUERY (Internet Information Server)
+sourcetype="iis"
+| fillnull value=- 'comment("Rellena todos los campos vacíos con -")'
+| search sc_status>="200" sc_status <"300" cs_uri_stem!=- c_ip!=- `comentario("Sólo códigos exitosos 200-299, eliminar URIs en blanco y IPs de clientes")`
+| estadísticas min(_tiempo) como inicio max(_tiempo) como parada dc(cs_Agente_de_usuario) como dc_valores_agentes_de_usuario(cs_Agente_de_usuario) como valores_agente_de_usuario dc(c_ip) como valores dc_src cuenta por cs_uri_stem `comentario("Encontrar la primera y última vez que se encontró la agrupación, número de cadenas distintas de Agente de Usuario y direcciones IP utilizadas para acceder a esa URI")`
+| convertir ctime(start) ctime(stop) `comentario("Convertir los tiempos a un formato legible")`
+| search dc_src<=5 OR dc_user_agent<=5 `comentario("Sólo URIs con <=5 agentes de usuario únicos o direcciones IP")`
+| inicio de la tabla parada cs_uri_stem dc_user_agent values_user_agent dc_src values_src
+
+
+SPLUNK PARA IDENTIFICAR AGENTES DE USUARIO POCO COMUNES PARA UN SERVIDOR WEB DE DESTINO
+En particular para las aplicaciones web internas, los agentes de usuario poco comunes pueden indicar actividad en la web.
+
+QUERY (APACHE)
+
+sourcetype="access_combined"
+| fillnull value=- ‘comment(“Rellena todos los campos vacíos con -”)’
+| search status>="200" status <"300" ` comment("Sólo códigos de éxito 200-299”)`
+| stats count by useragent `comment("Grupo de cadenas de agentes de usuario para determinar la frecuencia")`
+| sort + count `comment("Ordenar la cuenta en orden ascendente")`
+| head 10 `comment("Limitar los resultados a los 10 primeros. Esto se puede cambiar para ver más o menos resultados")`
+
+QUERY (IIS)
+
+sourcetype="iis" sc_status>="200" AND sc_status<"300"  'comment("Sólo códigos de éxito 200-299”)'
+| fillnull value=- ‘comment(“Fill all empty fields with -”)’
+| search sc_status>="200" sc_status <"300" `comment("Sólo códigos de éxito 200-299")`
+| stats count by cs_User_Agent `comment("Grupo de cadenas de agentes de usuario para determinar la frecuencia")`
+| sort + count `comment("Ordenar la cuenta en orden ascendente")`
+| head 10 `comment("Limitar los resultados a los 10 primeros. Esto se puede cambiar para ver más o menos resultados")`
+
+
+
+
